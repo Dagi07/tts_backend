@@ -1,4 +1,5 @@
 var driverModel = require('../models/driverModel.js');
+var vehicleModel = require('../models/vehicleModel.js');
 
 /**
  * driverController.js
@@ -27,7 +28,7 @@ module.exports = {
      */
     show: function (req, res) {
         var id = req.params.id;
-        driverModel.findOne({_id: id}, function (err, driver) {
+        driverModel.findOne({ _id: id }, function (err, driver) {
             if (err) {
                 return res.status(500).json({
                     message: 'Error when getting driver.',
@@ -48,13 +49,13 @@ module.exports = {
      */
     create: function (req, res) {
         var driver = new driverModel({
-			vehicle_assigned : req.body.vehicle_assigned,
-			phone_number : req.body.phone_number,
-			password : req.body.password,
-			licence_number : req.body.licence_number,
-			full_name : req.body.full_name,
-			email : req.body.email,
-			role : "driver"
+            vehicle_assigned: req.body.vehicle_assigned,
+            phone_number: req.body.phone_number,
+            password: req.body.password,
+            licence_number: req.body.licence_number,
+            full_name: req.body.full_name,
+            email: req.body.email,
+            role: "driver"
 
         });
 
@@ -74,7 +75,7 @@ module.exports = {
      */
     update: function (req, res) {
         var id = req.params.id;
-        driverModel.findOne({_id: id}, function (err, driver) {
+        driverModel.findOne({ _id: id },async function (err, driver) {
             if (err) {
                 return res.status(500).json({
                     message: 'Error when getting driver',
@@ -88,23 +89,35 @@ module.exports = {
             }
 
             driver.vehicle_assigned = req.body.vehicle_assigned ? req.body.vehicle_assigned : driver.vehicle_assigned;
-			driver.phone_number = req.body.phone_number ? req.body.phone_number : driver.phone_number;
-			driver.password = req.body.password ? req.body.password : driver.password;
-			driver.licence_number = req.body.licence_number ? req.body.licence_number : driver.licence_number;
-			driver.full_name = req.body.full_name ? req.body.full_name : driver.full_name;
-			driver.email = req.body.email ? req.body.email : driver.email;
-			driver.role = req.body.role ? req.body.role : driver.role;
-			
+            driver.phone_number = req.body.phone_number ? req.body.phone_number : driver.phone_number;
+            driver.password = req.body.password ? req.body.password : driver.password;
+            driver.licence_number = req.body.licence_number ? req.body.licence_number : driver.licence_number;
+            driver.full_name = req.body.full_name ? req.body.full_name : driver.full_name;
+            driver.email = req.body.email ? req.body.email : driver.email;
+            driver.role = req.body.role ? req.body.role : driver.role;
+
+            await vehicleModel.findOne({ _id: driver.vehicle_assigned },async function (err, vehicle) {
+                if (err) {}
+                if (!vehicle) {}
+
+                vehicle.driver = driver._id;
+                
+                await vehicle.save(function (err, vehicle) {
+                    if (err) {}
+                });
+            });
             driver.save(function (err, driver) {
                 if (err) {
-                    return res.status(500).json({
+                    console.log(err)
+                    res.status(500).json({
                         message: 'Error when updating driver.',
                         error: err
                     });
                 }
 
-                return res.json(driver);
+                res.json(driver);
             });
+
         });
     },
 

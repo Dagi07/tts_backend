@@ -8,7 +8,7 @@ var vehicleSchema = new Schema({
 	},
 	'device' : {
 	 	type: Schema.Types.ObjectId,
-	 	ref: 'device'
+	 	ref: 'devices'
 	},
 	'plate_number' : String,
 	'car_manufacturer' : String,
