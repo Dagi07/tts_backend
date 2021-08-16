@@ -19,5 +19,6 @@ var adminSchema = new Schema({
 		required:true
 	},
 });
+adminSchema.set("timestamps", true);
 
 module.exports = mongoose.model('admin', adminSchema);

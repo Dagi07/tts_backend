@@ -7,7 +7,7 @@ const role = require('../_helpers/authorization/role');
 //Controllers
 var devicesController=require('../controllers/devicesController')
 var vehicleController=require('../controllers/vehicleController')
-// var driverController=require('../controllers/driverContorller')
+var driverController=require('../controllers/driverController')
 var managerController=require('../controllers/managerController')
 
 //ADMIN ROUTES
@@ -23,15 +23,15 @@ router.post('/admin/vehicle/', vehicleController.create);
 router.put('/admin/vehicle/:id', vehicleController.update);
 router.delete('/admin/vehicle/:id', vehicleController.remove);
 
-// router.get('/admin/driver', driverController.list);
-// router.get('/admin/driver/:id', driverController.show);
-// router.post('/admin/driver/', driverController.create);
-// router.put('/admin/driver/:id', driverController.update);
-// router.delete('/admin/driver/:id', driverController.remove);
+router.get('/admin/driver', driverController.list);
+router.get('/admin/driver/:id', driverController.show);
+router.post('/admin/driver/', driverController.create);
+router.put('/admin/driver/:id', driverController.update);
+router.delete('/admin/driver/:id', driverController.remove);
 
 router.get('/admin/manager', managerController.list);
 router.get('/admin/manager/:id', managerController.show);
-router.post('/admin/manager/', managerController.create);
+router.post('/admin/manager/', managerController.register);
 router.put('/admin/manager/:id', managerController.update);
 router.delete('/admin/manager/:id', managerController.remove);
 

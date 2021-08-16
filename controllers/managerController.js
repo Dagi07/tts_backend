@@ -35,7 +35,44 @@ const isPasswordCorrect = async (pass1, pass2) => {
  */
 module.exports = {
     /**
-                 * adminController.login()
+ * * managerController.register()
+ */
+    register: async function (req, res) {
+
+        let manager_check = await managerModel.findOne({ username: req.body.username });
+        if (manager_check) {
+            return res.status(400).json({
+                success: false,
+                message: `Username already in use`,
+            });
+        }
+        const hashed_password = await hashPasword(req.body.password);
+        //console.log("Hashed!!");
+        var manager = new managerModel({
+            full_name: req.body.full_name,
+            username: req.body.username,
+            password: hashed_password,
+            role: "manager"
+
+        });
+      
+        manager.save(function (err, manager) {
+            if (err) {
+                return res.status(500).json({
+                    success: false,
+                    message: "Error when creating User",
+                    error: err,
+                });
+            }
+            return res.status(200).json({
+                success: true,
+                message: `Successfully Registered Admin!`,
+            });
+        });
+
+    },
+    /**
+                 * managerController.login()
                  */
     login: async function (req, res) {
         const body = req.body;
@@ -54,9 +91,10 @@ module.exports = {
                 var tmpAdminObj = {
                     _id: manager._id,
                     username: manager.username,
+                    full_name: manager.full_name,
                     createdAt: manager.createdAt,
                     updatedAt: manager.updatedAt,
-                    __v: admin.__v
+                    __v: manager.__v
                 }
                 jwt.sign(
                     {
@@ -125,7 +163,7 @@ module.exports = {
             full_name: req.body.full_name,
             username: req.body.username,
             password: req.body.password,
-            role: req.body.role
+            role: "manager"
 
         });
 

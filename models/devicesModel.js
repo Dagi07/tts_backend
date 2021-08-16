@@ -6,5 +6,6 @@ var devicesSchema = new Schema({
 	'last_location' : String,
 	'last_location_updated' : String
 });
+devicesSchema.set("timestamps", true);
 
 module.exports = mongoose.model('devices', devicesSchema);

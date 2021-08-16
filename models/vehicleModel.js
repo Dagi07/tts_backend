@@ -18,5 +18,6 @@ var vehicleSchema = new Schema({
 	'make_date' : Date,
 	'manufacture_date' : Date
 });
+vehicleSchema.set("timestamps", true);
 
 module.exports = mongoose.model('vehicle', vehicleSchema);

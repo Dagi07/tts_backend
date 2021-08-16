@@ -7,5 +7,6 @@ var managerSchema = new Schema({
 	'password' : String,
 	'role' : String
 });
+managerSchema.set("timestamps", true);
 
 module.exports = mongoose.model('manager', managerSchema);
