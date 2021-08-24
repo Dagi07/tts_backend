@@ -10,6 +10,11 @@ var vehicleController=require('../controllers/vehicleController')
 var driverController=require('../controllers/driverController')
 var managerController=require('../controllers/managerController')
 
+const authorize = require('../_helpers/authorize')
+
+
+router.post("/token", authorize.validateToken, authorize.check_token_with_fcm);
+
 //ADMIN ROUTES
 router.get('/admin/device', devicesController.list);
 router.get('/admin/device/:id', devicesController.show);
