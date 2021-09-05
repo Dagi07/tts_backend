@@ -4,11 +4,13 @@ var Schema   = mongoose.Schema;
 var vehicleSchema = new Schema({
 	'driver' : {
 	 	type: Schema.Types.ObjectId,
-	 	ref: 'driver'
+	 	ref: 'driver',
+		unique:true
 	},
 	'device' : {
 	 	type: Schema.Types.ObjectId,
-	 	ref: 'devices'
+	 	ref: 'devices',
+		unique:true
 	},
 	'plate_number' : String,
 	'car_manufacturer' : String,
@@ -16,7 +18,11 @@ var vehicleSchema = new Schema({
 	'fuel_usage' : Number,
 	'carrying_capacity' : Number,
 	'make_date' : Date,
-	'manufacture_date' : Date
+	'manufacture_date' : Date,
+	'on_trip':{
+		type:Boolean,
+		default:false
+	}
 });
 vehicleSchema.set("timestamps", true);
 

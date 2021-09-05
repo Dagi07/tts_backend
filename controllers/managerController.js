@@ -1,5 +1,7 @@
 var managerModel = require('../models/managerModel.js');
-
+var driverModel = require('../models/driverModel.js');
+var vehicleModel = require('../models/vehicleModel.js');
+var devicesModel = require('../models/devicesModel.js');
 
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
@@ -35,6 +37,30 @@ const isPasswordCorrect = async (pass1, pass2) => {
  */
 module.exports = {
     /**
+* * managerController.get_dash_data()
+*/
+    get_dash_data: async function (req, res) {
+        dash_data={
+            device_count:0,
+            driver_count:0,
+            vehicle_count:0,
+            vehicles_on_trip:0,
+        }
+        await devicesModel.countDocuments({}, function (err, device_count) {
+            dash_data.device_count=device_count
+        });
+        await driverModel.countDocuments({}, function (err, driver_count) {
+            dash_data.driver_count=driver_count
+        });
+        await vehicleModel.countDocuments({}, function (err, vehicle_count) {
+            dash_data.vehicle_count=vehicle_count
+        });
+        await vehicleModel.countDocuments({on_trip:true}, function (err, vehicles_on_trip) {
+            dash_data.vehicles_on_trip=vehicles_on_trip
+        });
+        return res.send(dash_data)
+    },
+    /**
  * * managerController.register()
  */
     register: async function (req, res) {
@@ -55,7 +81,7 @@ module.exports = {
             role: "manager"
 
         });
-      
+
         manager.save(function (err, manager) {
             if (err) {
                 return res.status(500).json({

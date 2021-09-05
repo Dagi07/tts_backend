@@ -1,5 +1,7 @@
 var driverModel = require('../models/driverModel.js');
 var vehicleModel = require('../models/vehicleModel.js');
+var tripsModel = require('../models/tripsModel.js');
+const getuser = require("../_helpers/authorize").getUser;
 
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
@@ -33,6 +35,28 @@ const isPasswordCorrect = async (pass1, pass2) => {
  * @description :: Server-side logic for managing drivers.
  */
 module.exports = {
+    /**
+     * driverController.get_my_data()
+     */
+     get_my_data: async function (req, res) {
+        var user = getuser(req).user
+        console.log("GETTING TRIP INFO")
+        var final_data={}
+        if(user){
+            var vehicle_assigned= await vehicleModel.findOne({ driver: user._id })
+            var current_trip= await tripsModel.findOne({driver: user._id, active:true,stopped:false}).populate('driver').populate('vehicle').populate('device')
+            if(current_trip){
+                final_data.on_trip=true
+                final_data.current_trip=current_trip
+            }
+            else{
+                final_data.on_trip=false
+                final_data.current_trip={}
+            }
+            final_data.vehicle_assigned=vehicle_assigned
+            return res.status(200).json(final_data);
+        }
+     },
         /**
      * driverController.login()
      */

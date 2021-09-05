@@ -10,7 +10,8 @@ var vehicleController=require('../controllers/vehicleController')
 var driverController=require('../controllers/driverController')
 var managerController=require('../controllers/managerController')
 
-const authorize = require('../_helpers/authorize')
+const authorize = require('../_helpers/authorize');
+const tripsController = require('../controllers/tripsController');
 
 
 router.post("/token", authorize.validateToken, authorize.check_token_with_fcm);
@@ -40,8 +41,16 @@ router.post('/admin/manager/', managerController.register);
 router.put('/admin/manager/:id', managerController.update);
 router.delete('/admin/manager/:id', managerController.remove);
 
+router.get('/admin/trips', tripsController.list);
+router.get('/admin/trips/:id', tripsController.show);
+router.post('/admin/trips/', tripsController.create);
+router.put('/admin/trips/:id', tripsController.update);
+router.delete('/admin/trips/:id', tripsController.remove);
+
+
 
 //MANAGER ROUTES
+router.get('/manager/dash/get_data', managerController.get_dash_data);
 
 router.get('/manager/device', devicesController.list);
 router.get('/manager/device/:id', devicesController.show);
@@ -56,5 +65,9 @@ router.put('/manager/vehicle/:id', vehicleController.update);
 router.delete('/manager/vehicle/:id', vehicleController.remove);
 
 //Driver ROUTES
+router.post('/driver/create_trip', tripsController.create);
+router.get('/driver/get_my_data', driverController.get_my_data);
+router.post('/driver/update_location', tripsController.update_location);
+router.post('/driver/stop_trip', tripsController.stop_trip);
 
 module.exports = router;
