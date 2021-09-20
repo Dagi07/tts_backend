@@ -9,6 +9,7 @@ var devicesController=require('../controllers/devicesController')
 var vehicleController=require('../controllers/vehicleController')
 var driverController=require('../controllers/driverController')
 var managerController=require('../controllers/managerController')
+var maintainanceController = require('../controllers/maintainanceController.js');
 
 const authorize = require('../_helpers/authorize');
 const tripsController = require('../controllers/tripsController');
@@ -63,6 +64,11 @@ router.get('/manager/vehicle/:id', vehicleController.show);
 router.post('/manager/vehicle/', vehicleController.create);
 router.put('/manager/vehicle/:id', vehicleController.update);
 router.delete('/manager/vehicle/:id', vehicleController.remove);
+
+router.get('/manager/maintainance/', maintainanceController.list);
+router.get('/manager/maintainance/:id', maintainanceController.show);
+router.post('/manager/maintainance', maintainanceController.create);
+
 
 //Driver ROUTES
 router.post('/driver/create_trip', tripsController.create);

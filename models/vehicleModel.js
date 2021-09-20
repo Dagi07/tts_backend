@@ -22,7 +22,9 @@ var vehicleSchema = new Schema({
 	'on_trip':{
 		type:Boolean,
 		default:false
-	}
+	},
+	'milage' : Number,
+
 });
 vehicleSchema.set("timestamps", true);
 
