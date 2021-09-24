@@ -45,6 +45,7 @@ module.exports = {
             driver_count:0,
             vehicle_count:0,
             vehicles_on_trip:0,
+            vehicles_to_be_maintained:0
         }
         await devicesModel.countDocuments({}, function (err, device_count) {
             dash_data.device_count=device_count
@@ -57,6 +58,9 @@ module.exports = {
         });
         await vehicleModel.countDocuments({on_trip:true}, function (err, vehicles_on_trip) {
             dash_data.vehicles_on_trip=vehicles_on_trip
+        });
+        await vehicleModel.countDocuments({milage: { $gt: 5000 },}, function (err, vehicles_to_be_maintained) {
+            dash_data.vehicles_to_be_maintained=vehicles_to_be_maintained
         });
         return res.send(dash_data)
     },

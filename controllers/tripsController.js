@@ -2,6 +2,7 @@ var tripsModel = require('../models/tripsModel.js');
 var vehicleModel = require('../models/vehicleModel.js');
 var driverModel = require('../models/driverModel.js');
 const getuser = require("../_helpers/authorize").getUser;
+var axios =require('axios');
 
 /**
  * tripsController.js
@@ -12,52 +13,59 @@ module.exports = {
     /**
        * tripsController.stop_trip()
        */
-     stop_trip: function (req, res) {
+    stop_trip: async function (req, res) {
         console.log(req.body)
-        var body= req.body;
+        var body = req.body;
+        var user = getuser(req).user
 
-        tripsModel.findOne({ _id: body.trip_id }, function (err, trips) {
-            if (err) {
-                return res.status(500).json({
-                    message: 'Error when getting trips',
-                    error: err
-                });
-            }
-            if (!trips) {
-                return res.status(404).json({
-                    message: 'No such trips'
-                });
-            }
-
-            trips.active = false;
-            
-            trips.save(function (err, trips) {
+        if (user) {
+            var vehicle = await vehicleModel.findOne({ driver: user._id })
+            tripsModel.findOne({ _id: body.trip_id }, function (err, trips) {
                 if (err) {
                     return res.status(500).json({
-                        message: 'Error when updating trips.',
+                        message: 'Error when getting trips',
                         error: err
                     });
                 }
+                if (!trips) {
+                    return res.status(404).json({
+                        message: 'No such trips'
+                    });
+                }
 
-                return res.json(trips);
+                trips.active = false;
+                vehicle.on_trip = false;
+                vehicle.milage=(vehicle.milage+parseFloat(trips.trip_distance)-parseFloat(trips.remaining_distance)).toFixed(2)
+                trips.save(async function (err, trips) {
+                    if (err) {
+                        return res.status(500).json({
+                            message: 'Error when updating trips.',
+                            error: err
+                        });
+                    }
+                    await vehicle.save()
+
+                    return res.json(trips);
+                });
             });
-        });
+        }
     },
-    
+
     /**
        * tripsController.update_location()
        */
     update_location: function (req, res) {
         console.log(req.body)
-        var body= req.body;
+        var body = req.body;
 
-        tripsModel.findOne({ _id: body.trip_id }, function (err, trips) {
+        tripsModel.findOne({ _id: body.trip_id }, async function (err, trips) {
             if (err) {
                 return res.status(500).json({
                     message: 'Error when getting trips',
                     error: err
                 });
             }
+
             if (!trips) {
                 return res.status(404).json({
                     message: 'No such trips'
@@ -65,7 +73,20 @@ module.exports = {
             }
 
             trips.current_location = req.body.current_location ? req.body.current_location : trips.current_location;
-            
+            trips.current_position = trips.current_location;
+            var trp_req=`https://api.distancematrix.ai/maps/api/distancematrix/json?origins=${trips.current_position}&destinations=${trips.destination_position}&departure_time=now&key=znJvG3bWwHlAEI4jo47aAA36xQWGh`
+            console.log(trp_req)
+            await axios.get(trp_req)
+                .then(res => {
+                    console.log(res.data);
+                    console.log(res.data.rows[0].elements[0]);
+                    trips.remaining_distance=res.data.rows[0].elements[0].distance.text
+                    trips.remaining_time=res.data.rows[0].elements[0].duration_in_traffic.text
+                }).catch(function (err) {
+                    console.log(err.response.data.message);
+                }).catch(function (err2) {
+                    console.log('Connection Error!', "error")
+                })
             trips.save(function (err, trips) {
                 if (err) {
                     return res.status(500).json({
@@ -143,16 +164,42 @@ module.exports = {
                 trip_start_time: Date.now(),
                 active: true,
                 started: true,
-                stopped: false
-
+                stopped: false,
+                starting_position: req.body.starting_position,
+                destination_position: req.body.destination_position,
+                current_position: req.body.current_position,
+                trip_distance: req.body.trip_distance,
             });
-            trips.save(function (err, trips) {
+            vehicle.on_trip = true;
+            
+            var trp_req=`https://api.distancematrix.ai/maps/api/distancematrix/json?origins=${trips.starting_position}&destinations=${trips.destination_position}&departure_time=now&key=znJvG3bWwHlAEI4jo47aAA36xQWGh`
+            console.log(trp_req)
+            await axios.get(trp_req)
+                .then(res => {
+                    console.log(res.data);
+                    console.log(res.data.rows[0].elements[0]);
+                    trips.trip_distance=res.data.rows[0].elements[0].distance.text
+                    trips.trip_estimated=res.data.rows[0].elements[0].duration_in_traffic.text
+
+                    trips.description=res.data.origin_addresses[0]+ " To " +res.data.destination_addresses[0]
+                }).catch(function (err) {
+                    console.log(err.response.data.message);
+                }).catch(function (err2) {
+                    console.log('Connection Error!', "error")
+                })
+            trips.trip_estimated_fuel=parseFloat(trips.trip_distance)/vehicle.fuel_usage*23
+            trips.save(async function (err, trips) {
+                console.log("Saving")
+
                 if (err) {
+                    console.log("ERR  ", err)
                     return res.status(500).json({
                         message: 'Error when creating trips',
                         error: err
                     });
                 }
+                await vehicle.save()
+
                 return res.status(201).json(trips);
             });
         }
@@ -194,6 +241,7 @@ module.exports = {
             trips.active = req.body.active ? req.body.active : trips.active;
             trips.started = req.body.started ? req.body.started : trips.started;
             trips.stopped = req.body.stopped ? req.body.stopped : trips.stopped;
+
 
             trips.save(function (err, trips) {
                 if (err) {

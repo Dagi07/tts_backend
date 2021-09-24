@@ -1,4 +1,5 @@
 var maintainanceModel = require('../models/maintainanceModel.js');
+var vehicleModel = require('../models/vehicleModel.js');
 
 /**
  * maintainanceController.js
@@ -46,22 +47,24 @@ module.exports = {
     /**
      * maintainanceController.create()
      */
-    create: function (req, res) {
+    create: async function (req, res) {
         console.log(req.body)
         var maintainance = new maintainanceModel({
 			vehicle : req.body.vehicle,
 			description : req.body.description,
-			mileage : req.body.mileage
+			mileage : req.body.milage
 
         });
-
-        maintainance.save(function (err, maintainance) {
+        var vehicle = await vehicleModel.findOne({ _id: maintainance.vehicle })
+        vehicle.milage=0
+        maintainance.save(async function (err, maintainance) {
             if (err) {
                 return res.status(500).json({
                     message: 'Error when creating maintainance',
                     error: err
                 });
             }
+            await vehicle.save()
             return res.status(201).json(maintainance);
         });
     },
